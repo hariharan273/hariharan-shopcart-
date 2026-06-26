@@ -1,4 +1,6 @@
-const BASE_URL = 'http://127.0.0.1:3000/api';
+const BASE_URL = window.location.protocol === 'file:' 
+    ? 'http://127.0.0.1:3000/api' 
+    : '/api';
 
 const api = {
     post: async (endpoint, data) => {

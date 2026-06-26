@@ -1,0 +1,7 @@
+node_modules/
+backend/node_modules/
+SHOP CART/backend/node_modules/
+.env
+*.log
+.DS_Store
+.vercel/

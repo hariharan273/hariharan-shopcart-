@@ -1,7 +1,25 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, 'shopcart.db');
+// Determine database path. For serverless/cloud environments, we resolve and initialize the path.
+const sourceDbPath = path.resolve(__dirname, 'shopcart.db');
+let dbPath = process.env.DATABASE_PATH || sourceDbPath;
+
+if (process.env.VERCEL) {
+    dbPath = '/tmp/shopcart.db';
+}
+
+// Copy the seeded database to the target writable path if it doesn't exist
+if (dbPath !== sourceDbPath && !fs.existsSync(dbPath)) {
+    try {
+        fs.copyFileSync(sourceDbPath, dbPath);
+        console.log(`Database initialized by copying seed data to: ${dbPath}`);
+    } catch (err) {
+        console.error(`Failed to initialize database at ${dbPath}:`, err);
+    }
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database', err.message);

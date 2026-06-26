@@ -25,7 +25,10 @@ function speak(text) {
     const lang = getCurrentLang();
     
     // Use our custom backend TTS proxy to completely bypass browser cross-origin audio blocking!
-    const audioUrl = `http://localhost:3000/api/tts?lang=${lang}&text=${encodeURIComponent(text)}`;
+    const baseTtsUrl = window.location.protocol === 'file:' 
+        ? 'http://127.0.0.1:3000/api/tts' 
+        : '/api/tts';
+    const audioUrl = `${baseTtsUrl}?lang=${lang}&text=${encodeURIComponent(text)}`;
     
     try {
         const audio = new Audio(audioUrl);
