@@ -29,11 +29,23 @@ app.use(cors());
 app.use(express.json());
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-// Root → index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+// Root route
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
+});
+
+// Serve all HTML pages
+app.get("/:page", (req, res, next) => {
+    if (req.params.page.includes(".")) return next();
+
+    res.sendFile(
+        path.join(__dirname, "..", "frontend", `${req.params.page}.html`),
+        (err) => {
+            if (err) next();
+        }
+    );
 });
 
 // Helper for Mock OTP
