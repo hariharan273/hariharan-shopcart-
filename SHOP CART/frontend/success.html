@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success - Quick Shopping</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .success-circle {
+            background: rgba(255, 255, 255, 0.2);
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 0 auto 30px auto;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.5);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container" style="justify-content: center; align-items: center; text-align: center; padding: 20px;">
+        
+        <div class="success-circle">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        
+        <h1 style="color: var(--text-dark); margin-bottom: 15px; font-size: 32px;">Payment Successful!</h1>
+        <p style="color: var(--text-muted); font-size: 18px; margin-bottom: 40px; background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 20px;" id="orderIdText">Order ID: ...</p>
+        
+        <div style="width: 100%;">
+            <button class="btn" style="background: var(--primary-color); color: white;" onclick="window.location.href='products.html'">Continue Shopping</button>
+            <button class="btn btn-secondary" onclick="window.location.href='wishlist.html'">View Wishlist</button>
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/voice.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderId = localStorage.getItem('lastOrderId');
+            document.getElementById('orderIdText').innerText = `Order ID: #${orderId || 'UNKNOWN'}`;
+            
+            // Dynamic translated voice success
+            setTimeout(() => {
+                const voiceText = getTranslatedText('voice_payment_success');
+                speak(voiceText);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

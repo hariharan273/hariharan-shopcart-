@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Quick Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        localStorage.setItem('temp_lang', 'en');
+    </script>
+    <style>
+        body { background: #0f1117; font-family: 'Inter', sans-serif; }
+
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+
+        .login-card {
+            background: #1a1f2e;
+            border: 1px solid #1f2937;
+            border-radius: 24px;
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .role-badge.customer { background: rgba(34,211,238,0.12); color: #22d3ee; border: 1px solid rgba(34,211,238,0.3); }
+        .role-badge.seller   { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .role-badge.admin    { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+        .role-badge.default  { background: rgba(156,163,175,0.1); color: #9ca3af; border: 1px solid #374151; }
+
+        .login-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #f9fafb;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .login-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .form-field { margin-bottom: 18px; }
+        .form-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-field input {
+            width: 100%;
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 13px 16px;
+            font-size: 14px;
+            color: #f9fafb;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-field input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+        .form-field.customer-focus input:focus { border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.12); }
+        .form-field.seller-focus input:focus   { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+        .form-field.admin-focus input:focus    { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+        .btn-login.customer { background: linear-gradient(135deg, #06b6d4, #10b981); color: white; }
+        .btn-login.seller   { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; }
+        .btn-login.admin    { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+        .btn-login.default  { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+        .btn-login:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .btn-login:active { transform: translateY(0); }
+
+        /* Hint box */
+        .hint-box {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        .hint-box strong { color: #9ca3af; }
+        .hint-box .cred { color: #818cf8; font-family: monospace; font-size: 12px; }
+
+        .links-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #1f2937;
+            font-size: 13px;
+            color: #6b7280;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .links-row a { color: #818cf8; text-decoration: none; font-weight: 600; }
+        .links-row a:hover { color: #a5b4fc; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #6b7280;
+            text-decoration: none;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #d1d5db; }
+
+        .lang-select-wrap {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #1f2937;
+        }
+        .lang-select-wrap label { font-size: 12px; color: #6b7280; display: block; margin-bottom: 8px; }
+        .lang-select-wrap select {
+            width: 100%;
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #d1d5db;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrap">
+        <div class="login-card">
+
+            <a href="index.html" class="back-link">← Back to Home</a>
+
+            <div class="role-badge default" id="roleBadge">🔐 Login</div>
+            <h1 class="login-title" id="loginTitle">Welcome Back</h1>
+            <p class="login-sub" id="loginSub">Sign in to your Quick Shopping account.</p>
+
+            <form id="loginForm">
+                <div class="form-field" id="usernameField">
+                    <label>Email / Mobile Number / Username</label>
+                    <input type="text" id="username" placeholder="Enter your email or mobile" required autocomplete="username">
+                </div>
+                <div class="form-field" id="passwordField">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login default" id="loginBtn">Login</button>
+            </form>
+
+            <form id="otpForm" style="display:none;">
+                <p style="font-size: 13px; color: #10b981; margin-bottom: 16px; font-weight: 600;">✅ Security Check: An OTP has been sent to your registered email (ksnisha2006@gmail.com).</p>
+                <div class="form-field">
+                    <label>Enter 6-Digit OTP</label>
+                    <input type="text" id="adminOtp" placeholder="Enter OTP code" required>
+                </div>
+                <button type="submit" class="btn-login admin" id="verifyOtpBtn">Verify & Access Dashboard</button>
+            </form>
+
+            <div class="hint-box" id="hintBox" style="display:none;"></div>
+
+            <div class="links-row">
+                <span>New user? <a href="register.html">Register</a></span>
+                <a href="seller_register.html">Apply as Seller →</a>
+            </div>
+
+            <div class="lang-select-wrap">
+                <label>🌐 Choose Language / மொழி / భాష</label>
+                <select id="langSelect" onchange="changeTempLang(this.value)">
+                    <option value="en">English</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="voice-fab" class="fab-voice" style="display:none;">🎤</div>
+
+    <script src="js/api.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/voice.js"></script>
+    <script>
+        document.getElementById('langSelect').value = 'en';
+
+        // ── Read role from URL param ──────────────────────────────
+        const urlRole = new URLSearchParams(window.location.search).get('role') || 'default';
+
+        const roleConfig = {
+            customer: {
+                badge:    '🛒 Customer',
+                badgeCls: 'customer',
+                title:    'Welcome, Shopper!',
+                sub:      'Sign in to browse products, track orders, and manage your wishlist.',
+                btnCls:   'customer',
+                btnText:  '🛒 Login as Customer',
+                hint:     `<strong>Demo Credentials:</strong><br>
+                           Email: <span class="cred">customer1@shopcart.com</span><br>
+                           Password: <span class="cred">customer123</span>`,
+                focusCls: 'customer-focus'
+            },
+            seller: {
+                badge:    '🏪 Seller',
+                badgeCls: 'seller',
+                title:    'Seller Dashboard Login',
+                sub:      'Sign in to manage your products, orders, and store analytics.',
+                btnCls:   'seller',
+                btnText:  '🏪 Login as Seller',
+                hint:     `<strong>Demo Credentials:</strong><br>
+                           Email: <span class="cred">seller1@shopcart.com</span><br>
+                           Password: <span class="cred">seller123</span>`,
+                focusCls: 'seller-focus'
+            },
+            admin: {
+                badge:    '🛡️ Master Admin',
+                badgeCls: 'admin',
+                title:    'Admin Control Panel',
+                sub:      'Full access to platform management, seller approvals, and analytics.',
+                btnCls:   'admin',
+                btnText:  '🛡️ Login as Admin',
+                hint:     `<strong>Admin Credentials:</strong><br>
+                           Username: <span class="cred">masteradmin</span><br>
+                           Password: <span class="cred">1234</span>`,
+                focusCls: 'admin-focus'
+            },
+            default: {
+                badge:    '🔐 Login',
+                badgeCls: 'default',
+                title:    'Welcome Back',
+                sub:      'Sign in to your Quick Shopping account.',
+                btnCls:   'default',
+                btnText:  'Login',
+                hint:     null,
+                focusCls: ''
+            }
+        };
+
+        const cfg = roleConfig[urlRole] || roleConfig.default;
+
+        // Apply role config to DOM
+        const badge = document.getElementById('roleBadge');
+        badge.textContent = cfg.badge;
+        badge.className = `role-badge ${cfg.badgeCls}`;
+
+        document.getElementById('loginTitle').textContent = cfg.title;
+        document.getElementById('loginSub').textContent   = cfg.sub;
+
+        const btn = document.getElementById('loginBtn');
+        btn.className = `btn-login ${cfg.btnCls}`;
+        btn.textContent = cfg.btnText;
+
+        if (cfg.focusCls) {
+            document.getElementById('usernameField').classList.add(cfg.focusCls);
+            document.getElementById('passwordField').classList.add(cfg.focusCls);
+        }
+
+        if (cfg.hint) {
+            const hintBox = document.getElementById('hintBox');
+            hintBox.innerHTML = cfg.hint;
+            hintBox.style.display = 'block';
+        }
+
+        if (urlRole && urlRole !== 'default') {
+            const regLink = document.querySelector('.links-row a[href="register.html"]');
+            if (regLink) {
+                regLink.href = `register.html?role=${urlRole}`;
+            }
+        }
+
+        // ── Language ──────────────────────────────────────────────
+        function changeTempLang(lang) {
+            localStorage.setItem('temp_lang', lang);
+            applyTranslations();
+            speak(getTranslatedText('language_changed'));
+        }
+
+        // ── Login Submit ──────────────────────────────────────────
+        let pendingAdminEmail = null;
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value
+            };
+
+            btn.textContent = 'Logging in...';
+            btn.disabled = true;
+
+            try {
+                const res = await api.post('/auth/login', data);
+                
+                if (res.message === 'OTP_REQUIRED') {
+                    pendingAdminEmail = res.email;
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('otpForm').style.display = 'block';
+                    document.getElementById('hintBox').style.display = 'none';
+                    return;
+                }
+
+                setUser(res.user);
+                if (res.user && res.user.language) {
+                    localStorage.setItem('temp_lang', res.user.language);
+                }
+
+                if (res.user.role === 'admin') window.location.href = 'admin.html';
+                else if (res.user.role === 'seller') window.location.href = 'seller.html';
+                else window.location.href = 'products.html';
+            } catch (err) {
+                alert(err.message || 'Login failed');
+                btn.textContent = cfg.btnText;
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('otpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otpBtn = document.getElementById('verifyOtpBtn');
+            const otp = document.getElementById('adminOtp').value.trim();
+            
+            otpBtn.textContent = 'Verifying...';
+            otpBtn.disabled = true;
+
+            try {
+                const res = await api.post('/auth/verify-admin-otp', { email: pendingAdminEmail, otp });
+                setUser(res.user);
+                window.location.href = 'admin.html';
+            } catch (err) {
+                alert(err.message || 'Invalid OTP');
+                otpBtn.textContent = 'Verify & Access Dashboard';
+                otpBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

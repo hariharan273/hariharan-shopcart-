@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Quick Shopping</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid var(--border-light);
+            background: var(--bg-container);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-soft);
+        }
+        .payment-option:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .payment-option input {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+        }
+        .payment-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .pin-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .pin-inputs input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        .pin-inputs input:focus {
+            border-color: var(--primary-teal);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="header">
+            <span onclick="window.history.back()" style="font-size: 24px; cursor: pointer;">🔙</span>
+            <h2 style="margin:0;">Payment</h2>
+            <span style="visibility: hidden;">🔙</span>
+        </div>
+        
+        <div class="white-container">
+            <h3 style="color: var(--text-muted); margin-bottom: 25px; text-align: left;">Select Payment Method</h3>
+            
+            <form id="paymentForm">
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="Google Pay" required onclick="selectOption(this)">
+                    <span style="font-size: 18px; font-weight: 600;">Google Pay</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="PayTM" onclick="selectOption(this)">
+                    <span style="font-size: 18px; font-weight: 600;">PayTM</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="Credit/Debit Card" onclick="selectOption(this)">
+                    <span style="font-size: 18px; font-weight: 600;">Credit / Debit Card</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="Cash on Delivery" onclick="selectOption(this)">
+                    <span style="font-size: 18px; font-weight: 600;">Cash on Delivery</span>
+                </label>
+                
+                <button type="submit" class="btn" style="margin-top: 40px; padding: 20px; font-size: 18px;">PAY NOW</button>
+            </form>
+        </div>
+
+        <div id="voice-fab" class="fab-voice">🎤</div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div class="modal-overlay" id="pinModal" style="display: none;">
+        <div class="modal">
+            <h2 style="color: var(--text-dark);">Enter PIN</h2>
+            <p style="color: var(--text-muted);" id="modalMethodText">For Google Pay</p>
+            <div class="pin-inputs" id="pinContainer">
+                <input type="password" maxlength="1">
+                <input type="password" maxlength="1">
+                <input type="password" maxlength="1">
+                <input type="password" maxlength="1">
+            </div>
+            <button class="btn" id="confirmPinBtn">Confirm Payment</button>
+            <button class="btn btn-secondary" style="color: var(--text-muted); border: none;" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/voice.js"></script>
+    <script>
+        let selectedMethod = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initVoiceAssistant();
+        });
+
+        function selectOption(radio) {
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            radio.parentElement.classList.add('selected');
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            // Trigger Voice
+            const voiceText = getTranslatedText('voice_payment_chosen', selectedMethod);
+            speak(voiceText);
+
+            // Show PIN Modal
+            document.getElementById('modalMethodText').innerText = `For ${selectedMethod}`;
+            document.getElementById('pinModal').style.display = 'flex';
+            
+            // Auto focus first PIN input
+            const inputs = document.querySelectorAll('.pin-inputs input');
+            setTimeout(() => inputs[0].focus(), 100);
+        });
+
+        // PIN Input Auto-advance logic
+        const inputs = document.querySelectorAll('.pin-inputs input');
+        inputs.forEach((input, index) => {
+            input.addEventListener('keyup', (e) => {
+                if (e.key >= 0 && e.key <= 9) {
+                    if (index < inputs.length - 1) inputs[index + 1].focus();
+                } else if (e.key === 'Backspace') {
+                    if (index > 0) inputs[index - 1].focus();
+                }
+            });
+        });
+
+        function closeModal() {
+            document.getElementById('pinModal').style.display = 'none';
+            inputs.forEach(i => i.value = '');
+        }
+
+        document.getElementById('confirmPinBtn').addEventListener('click', async () => {
+            const user = getUser();
+            try {
+                const res = await api.post('/checkout', { userId: user.id, paymentMethod: selectedMethod });
+                localStorage.setItem('lastOrderId', res.orderId);
+                window.location.href = 'success.html';
+            } catch (err) {
+                alert("Failed to process payment");
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - Quick Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #0f1117; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+
+        .login-card {
+            background: #1a1f2e;
+            border: 1px solid #1f2937;
+            border-radius: 24px;
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #f9fafb;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .login-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .otp-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .otp-inputs input {
+            width: 50px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            color: #f9fafb;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .otp-inputs input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            color: white;
+        }
+        .btn-login:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .btn-login:active { transform: translateY(0); }
+
+        .alert-box {
+            font-size: 13px;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrap">
+        <div class="login-card">
+            
+            <h1 class="login-title">Verify OTP</h1>
+            <p class="login-sub">Enter the 4-digit code we just sent to your email address.</p>
+            
+            <div id="alertBox" class="alert-box"></div>
+            
+            <form id="otpForm">
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" id="otp1" required autocomplete="off">
+                    <input type="text" maxlength="1" id="otp2" required autocomplete="off">
+                    <input type="text" maxlength="1" id="otp3" required autocomplete="off">
+                    <input type="text" maxlength="1" id="otp4" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn-login" id="verifyBtn">Verify & Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Auto focus next input
+        const inputs = document.querySelectorAll('.otp-inputs input');
+        inputs.forEach((input, index) => {
+            input.addEventListener('keyup', (e) => {
+                if (e.key >= 0 && e.key <= 9) {
+                    if (index < inputs.length - 1) inputs[index + 1].focus();
+                } else if (e.key === 'Backspace') {
+                    if (index > 0) inputs[index - 1].focus();
+                }
+            });
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role');
+
+        document.getElementById('otpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('verifyBtn');
+            const alertBox = document.getElementById('alertBox');
+            
+            const otp = Array.from(inputs).map(i => i.value).join('');
+            const contact = localStorage.getItem('otp_contact');
+            
+            btn.textContent = 'Verifying...';
+            btn.disabled = true;
+            alertBox.style.display = 'none';
+
+            try {
+                await api.post('/auth/verify-otp', { contact, otp });
+                alert("Account created successfully!");
+                localStorage.removeItem('otp_contact');
+                const roleParam = role ? `?role=${role}` : '';
+                window.location.href = `login.html${roleParam}`;
+            } catch (err) {
+                alertBox.textContent = err.message || 'Invalid OTP';
+                alertBox.style.display = 'block';
+                btn.textContent = 'Verify & Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

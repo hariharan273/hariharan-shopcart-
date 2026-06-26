@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Quick Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body { background: #0f1117; min-height: 100vh; display: flex; justify-content: center; }
+
+        .cart-page {
+            width: 100%;
+            min-height: 100vh;
+            background: #0f1117;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 120px;
+        }
+
+        /* Header */
+        .cart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            background: #0f1117;
+            z-index: 10;
+            border-bottom: 1px solid #1f2937;
+        }
+        .back-btn {
+            width: 40px; height: 40px;
+            background: #1f2937;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer;
+            border: 1px solid #374151;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: #374151; }
+        .cart-header h2 { font-size: 18px; font-weight: 800; color: #f9fafb; }
+        .item-count-badge {
+            background: #6366f1;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* Cart items */
+        .cart-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+        .cart-card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 18px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+        .cart-card:hover { border-color: #6366f1; }
+
+        .cart-card img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            background: #111827;
+            border-radius: 12px;
+            padding: 6px;
+            flex-shrink: 0;
+        }
+
+        .cart-info { flex: 1; min-width: 0; }
+        .cart-cat { font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .cart-name { font-size: 13px; font-weight: 700; color: #f9fafb; margin-bottom: 6px; line-height: 1.3; }
+        .cart-price { font-size: 15px; font-weight: 800; color: #818cf8; }
+        .cart-qty { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+        .remove-btn {
+            background: #1a1f2e;
+            border: 1px solid #374151;
+            color: #ef4444;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .remove-btn:hover { background: #3b1c1c; border-color: #ef4444; }
+
+        /* Summary */
+        .summary-box {
+            margin: 0 16px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 18px;
+            padding: 18px;
+        }
+        .summary-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px; color: #9ca3af;
+            border-bottom: 1px solid #374151;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row.total { color: #f9fafb; font-size: 17px; font-weight: 800; }
+        .summary-row.total .val { color: #818cf8; }
+
+        /* Checkout */
+        .checkout-wrap {
+            padding: 16px;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            background: #0f1117;
+            border-top: 1px solid #1f2937;
+        }
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .checkout-btn:hover { opacity: 0.9; }
+        .checkout-btn:active { transform: scale(0.98); }
+
+        /* Empty state */
+        .empty-cart {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .empty-cart .icon { font-size: 72px; margin-bottom: 16px; }
+        .empty-cart h3 { font-size: 20px; font-weight: 700; color: #f9fafb; margin-bottom: 8px; }
+        .empty-cart p { font-size: 14px; color: #6b7280; margin-bottom: 24px; }
+        .shop-now-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .shop-now-btn:hover { opacity: 0.9; }
+
+        .fab-voice {
+            position: fixed;
+            bottom: 88px;
+            right: 20px;
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+            cursor: pointer;
+            z-index: 150;
+            transition: all 0.2s;
+        }
+        .fab-voice:hover { transform: scale(1.08); }
+        .fab-voice.listening { animation: pulse 1.5s infinite; background: linear-gradient(135deg, #ef4444, #dc2626); }
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            70%  { box-shadow: 0 0 0 16px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+    </style>
+</head>
+<body>
+<div class="cart-page">
+
+    <!-- Header -->
+    <div class="cart-header">
+        <div class="back-btn" onclick="window.history.back()">←</div>
+        <h2 data-i18n="cart_title">Your Cart</h2>
+        <div class="item-count-badge" id="itemCountBadge">0 items</div>
+    </div>
+
+    <!-- Content area -->
+    <div id="cartContent" style="flex:1;">
+        <div class="cart-list" id="cartList" style="display:none;"></div>
+    </div>
+
+    <div id="summaryArea"></div>
+
+    <div id="voice-fab" class="fab-voice">🎤</div>
+
+</div>
+
+<div class="checkout-wrap" id="checkoutWrap" style="display:none;">
+    <button class="checkout-btn" onclick="window.location.href='payment.html'" data-i18n="checkout">Checkout</button>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/translations.js"></script>
+<script src="js/voice.js"></script>
+<script>
+    let cartTotal = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initVoiceAssistant();
+        loadCart();
+    });
+
+    async function loadCart() {
+        const user = getUser();
+        if (!user) { window.location.href = 'login.html'; return; }
+
+        const content = document.getElementById('cartContent');
+
+        try {
+            const items = await api.get(`/cart/${user.id}`);
+            cartTotal = 0;
+
+            if (items.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="icon">🛒</div>
+                        <h3>Cart is empty!</h3>
+                        <p>Add some products to your cart and come back here.</p>
+                        <button class="shop-now-btn" onclick="window.location.href='products.html'">🛍️ Shop Now</button>
+                    </div>`;
+                document.getElementById('itemCountBadge').textContent = '0 items';
+                document.getElementById('checkoutWrap').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('itemCountBadge').textContent = items.length + ' item' + (items.length > 1 ? 's' : '');
+
+            const list = document.getElementById('cartList');
+            list.style.display = 'flex';
+            list.innerHTML = items.map(item => {
+                cartTotal += item.price * item.quantity;
+                const name = getProductTranslatedName(item);
+                return `
+                    <div class="cart-card" id="cart-item-${item.cart_id}">
+                        <img src="${item.image_url}" alt="${item.name}" onerror="this.src='https://placehold.co/72x72/1f2937/6366f1?text=📦'">
+                        <div class="cart-info">
+                            <div class="cart-cat">${item.category || 'Product'}</div>
+                            <div class="cart-name">${name}</div>
+                            <div class="cart-price">₹${Number(item.price).toLocaleString('en-IN')}</div>
+                            <div class="cart-qty">Qty: ${item.quantity} &nbsp;·&nbsp; Subtotal: ₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeItem(${item.cart_id})">🗑️</button>
+                    </div>
+                `;
+            }).join('');
+
+            // Summary
+            const tax = Math.round(cartTotal * 0.05);
+            const delivery = cartTotal > 5000 ? 0 : 99;
+            const grand = cartTotal + tax + delivery;
+
+            document.getElementById('summaryArea').innerHTML = `
+                <div class="summary-box" style="margin-bottom: 16px;">
+                    <div class="summary-row"><span>Subtotal</span><span>₹${cartTotal.toLocaleString('en-IN')}</span></div>
+                    <div class="summary-row"><span>GST (5%)</span><span>₹${tax.toLocaleString('en-IN')}</span></div>
+                    <div class="summary-row"><span>Delivery</span><span>${delivery === 0 ? '<span style="color:#10b981;">FREE</span>' : '₹' + delivery}</span></div>
+                    <div class="summary-row total"><span data-i18n="total">Total Amount</span><span class="val">₹${grand.toLocaleString('en-IN')}</span></div>
+                </div>
+            `;
+            applyTranslations();
+            document.getElementById('checkoutWrap').style.display = 'block';
+
+        } catch (err) {
+            content.innerHTML = '<p style="text-align:center;color:#ef4444;padding:30px;">Error loading cart. Please try again.</p>';
+        }
+    }
+
+    async function removeItem(cartId) {
+        const el = document.getElementById('cart-item-' + cartId);
+        if (el) { el.style.opacity = '0.4'; el.style.transform = 'scale(0.97)'; }
+        try {
+            await api.delete(`/cart/${cartId}`);
+            loadCart();
+        } catch (err) {
+            if (el) { el.style.opacity = '1'; el.style.transform = ''; }
+        }
+    }
+</script>
+</body>
+</html>

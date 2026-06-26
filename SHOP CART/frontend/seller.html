@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - Quick Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: #0f1117;
+            color: #f9fafb;
+            min-height: 100vh;
+            margin: 0;
+            /* Overriding global flex that broke the layout */
+            display: block !important; 
+        }
+
+        /* --- Dashboard Layout --- */
+        .dashboard-layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background: #1a1f2e;
+            border-right: 1px solid #2d3748;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid #2d3748;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+        }
+        .sidebar-header h1 { 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: white; 
+            margin-bottom: 4px;
+            line-height: 1.2;
+            text-align: left;
+        }
+        .sidebar-header p { 
+            font-size: 12px; 
+            color: #10b981; 
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
+        }
+
+        .sidebar-footer {
+            padding: 24px;
+            border-top: 1px solid #2d3748;
+        }
+        .back-btn {
+            display: block;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            max-width: calc(100vw - 280px);
+            overflow-x: hidden;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); border-color: #4b5563; }
+        .stat-card .icon-wrap { 
+            width: 56px; 
+            height: 56px; 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 28px; 
+        }
+        .stat-card .details { flex: 1; }
+        .stat-card .num { font-size: 28px; font-weight: 800; color: white; line-height: 1.1; }
+        .stat-card .label { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
+
+        /* Alerts */
+        .inventory-alert-box {
+            margin-bottom: 30px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px dashed #ef4444;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .inventory-alert-box h4 {
+            color: #f87171;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+        .inventory-alert-box ul {
+            font-size: 13px;
+            color: #fca5a5;
+            padding-left: 24px;
+            line-height: 1.6;
+        }
+
+        /* Tab Content Containers */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Form styling */
+        .form-section {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 600px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        .form-section h3 {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: #f9fafb;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 12px;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Tables */
+        .table-container {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            background: #1a1f2e;
+            color: #9ca3af;
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #374151;
+        }
+        td {
+            padding: 16px 20px;
+            color: #e5e7eb;
+            border-bottom: 1px solid #2d3748;
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #2d3748; }
+
+        .product-thumb {
+            width: 48px; height: 48px; object-fit: contain; background: #111827; border-radius: 10px; padding: 6px; border: 1px solid #374151;
+        }
+
+        .badge-status {
+            display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .badge-status.approved { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-status.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-status.rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .inline-input {
+            width: 90px; background: #111827; border: 1px solid #4b5563; color: white; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
+        }
+        .inline-input:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+
+        .btn-sm {
+            background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-sm:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+
+        .tracking-select {
+            background: #111827; color: white; border: 1px solid #4b5563; border-radius: 8px; padding: 8px; font-size: 12px; outline: none; cursor: pointer; font-weight: 600;
+        }
+        .tracking-select:focus { border-color: #3b82f6; }
+
+        #toast {
+            position: fixed; top: 24px; right: 24px; background: #10b981; color: white; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        #toast.show { opacity: 1; }
+        .overflow-x { overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 id="sellerTitle">Seller Dashboard</h1>
+                <p id="businessSub">Business Console</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a class="nav-link active" onclick="showTab('products', this)">📦 My Products</a>
+                <a class="nav-link" onclick="showTab('addProduct', this)">➕ Add New Product</a>
+                <a class="nav-link" onclick="showTab('orders', this)">📋 Manage Orders</a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" onclick="logout(); return false;" class="back-btn">← Log Out / Shop</a>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">💰</div>
+                    <div class="details">
+                        <div class="num" id="statRevenue">₹0</div>
+                        <div class="label">Total Revenue</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">📦</div>
+                    <div class="details">
+                        <div class="num" id="statOrders">0</div>
+                        <div class="label">Total Orders</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-wrap" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">🛍️</div>
+                    <div class="details">
+                        <div class="num" id="statProducts">0</div>
+                        <div class="label">My Products</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Inventory Alerts -->
+            <div class="inventory-alert-box" id="lowStockBox" style="display:none;">
+                <h4>⚠️ Low Stock Alert</h4>
+                <ul id="lowStockList"></ul>
+            </div>
+
+            <!-- Tab 1: Products List -->
+            <div id="products" class="tab-content active">
+                <div class="table-container">
+                    <div class="overflow-x">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Product Details</th>
+                                    <th>Category</th>
+                                    <th>Price (₹)</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsBody">
+                                <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Loading products...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Add Product Form -->
+            <div id="addProduct" class="tab-content">
+                <div class="form-section">
+                    <h3>➕ Add New Product</h3>
+                    <form id="addProductForm">
+                        <div class="form-group">
+                            <label>Product Name (English)</label>
+                            <input type="text" id="p_name" placeholder="e.g. Apple iPad Pro" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Name in Tamil (தமிழ்)</label>
+                                <input type="text" id="p_name_ta" placeholder="e.g. ஆப்பிள் ஐபேட்">
+                            </div>
+                            <div class="form-group">
+                                <label>Name in Telugu (తెలుగు)</label>
+                                <input type="text" id="p_name_te" placeholder="e.g. యాపిల్ ఐప్యాడ్">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Product Description</label>
+                            <input type="text" id="p_desc" placeholder="Details about storage, color, specs, etc." required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="p_price" placeholder="49999" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Initial Stock</label>
+                                <input type="number" id="p_stock" placeholder="10" value="10" required min="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="p_cat" required>
+                                    <option value="Smartphones">Smartphones</option>
+                                    <option value="Laptops">Laptops</option>
+                                    <option value="Audio">Audio</option>
+                                    <option value="Smartwatches">Smartwatches</option>
+                                    <option value="Cameras">Cameras</option>
+                                    <option value="Tablets">Tablets</option>
+                                    <option value="Gaming">Gaming</option>
+                                    <option value="Footwear">Footwear</option>
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Home Appliances">Home Appliances</option>
+                                    <option value="Kitchen">Kitchen</option>
+                                    <option value="Accessories">Accessories</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Image URL</label>
+                                <input type="url" id="p_img" placeholder="https://images.unsplash.com/...">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); margin-top:20px; font-size: 15px; border-radius: 12px; padding: 18px;">🚀 Submit for Approval</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab 3: Orders List -->
+            <div id="orders" class="tab-content">
+                <div class="table-container">
+                    <div class="overflow-x">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Item Details</th>
+                                    <th>Customer</th>
+                                    <th>Total Price</th>
+                                    <th>Date</th>
+                                    <th>Payment</th>
+                                    <th>Shipping Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersBody">
+                                <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Loading orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script>
+        function showToast(msg, color='#10b981') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = color;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function showTab(id, el) {
+            document.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+
+        let sellerProducts = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = getUser();
+            if (!user || user.role !== 'seller') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('sellerTitle').textContent = user.name;
+            document.getElementById('businessSub').textContent = user.email;
+
+            await loadDashboardData(user.id);
+        });
+
+        async function loadDashboardData(sellerId) {
+            try {
+                const stats = await api.get(`/seller/dashboard/${sellerId}`);
+                document.getElementById('statRevenue').textContent = '₹' + Number(stats.revenue).toLocaleString('en-IN');
+                document.getElementById('statOrders').textContent = stats.orders;
+                document.getElementById('statProducts').textContent = stats.products;
+
+                if (stats.lowStock && stats.lowStock.length > 0) {
+                    document.getElementById('lowStockBox').style.display = 'block';
+                    document.getElementById('lowStockList').innerHTML = stats.lowStock.map(item => 
+                        `<li><strong>${item.name}</strong> has only <strong>${item.stock}</strong> left in stock. Please restock!</li>`
+                    ).join('');
+                } else {
+                    document.getElementById('lowStockBox').style.display = 'none';
+                }
+            } catch (err) {}
+
+            await fetchSellerProducts(sellerId);
+            await loadSellerOrders(sellerId);
+        }
+
+        async function fetchSellerProducts(sellerId) {
+            try {
+                const products = await api.get(`/seller/products/list/${sellerId}`);
+                sellerProducts = products;
+                const tbody = document.getElementById('productsBody');
+                if (products.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">No products found. Time to add your first item!</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = products.map(p => `
+                    <tr id="row-${p.id}">
+                        <td><img class="product-thumb" src="${p.image_url}" alt="${p.name}" onerror="this.src='https://placehold.co/48x48/1f2937/6366f1?text=📦'"></td>
+                        <td>
+                            <div style="font-weight:700;color:white;font-size:14px;margin-bottom:4px;">${p.name}</div>
+                            <div style="font-size:11px;color:#9ca3af;max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.description || ''}</div>
+                        </td>
+                        <td><span style="background:rgba(255,255,255,0.05);padding:4px 8px;border-radius:6px;font-size:11px;">${p.category}</span></td>
+                        <td><input type="number" class="inline-input" id="price-${p.id}" value="${p.price}" min="1"></td>
+                        <td><input type="number" class="inline-input" id="stock-${p.id}" value="${p.stock || 0}" min="0"></td>
+                        <td><span class="badge-status ${p.status}">${p.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-sm" onclick="saveProductEdit(${p.id})">Update</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(err) {
+                document.getElementById('productsBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Error loading products.</td></tr>';
+            }
+        }
+
+        async function saveProductEdit(productId) {
+            const price = document.getElementById(`price-${productId}`).value;
+            const stock = document.getElementById(`stock-${productId}`).value;
+            const item = sellerProducts.find(p => p.id === productId);
+            if (!item) return;
+
+            const user = getUser();
+            const payload = {
+                productId,
+                name: item.name,
+                description: item.description,
+                price: Number(price),
+                stock: Number(stock),
+                image_url: item.image_url,
+                category: item.category,
+                sellerId: user.id
+            };
+
+            try {
+                await api.post('/seller/products/update', payload);
+                showToast('✅ Product updated successfully!');
+                await loadDashboardData(user.id);
+            } catch (err) {
+                showToast('❌ Failed to update product', '#ef4444');
+            }
+        }
+
+        async function loadSellerOrders(sellerId) {
+            try {
+                const orders = await api.get(`/seller/orders/${sellerId}`);
+                const tbody = document.getElementById('ordersBody');
+                if (orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">No orders containing your products yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td style="color:#9ca3af;font-size:12px;">#${o.order_id}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <img class="product-thumb" src="${o.image_url}" alt="${o.product_name}" onerror="this.src='https://placehold.co/48x48/1f2937/6366f1?text=📦'">
+                                <div>
+                                    <div style="font-weight:700;color:white;">${o.product_name}</div>
+                                    <div style="font-size:11px;color:#9ca3af;margin-top:2px;">Qty: ${o.quantity}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-weight:600;">${o.customer_name}</td>
+                        <td><strong style="color:#10b981;">₹${Number(o.price * o.quantity).toLocaleString('en-IN')}</strong></td>
+                        <td style="color:#9ca3af;font-size:12px;">${new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+                        <td><span style="background:rgba(139,92,246,0.1);color:#a78bfa;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;">${o.payment_method.toUpperCase()}</span></td>
+                        <td>
+                            <select class="tracking-select" onchange="updateTracking(${o.id}, this.value)">
+                                <option value="Ordered" ${o.tracking_status === 'Ordered' ? 'selected' : ''}>Ordered</option>
+                                <option value="Packed" ${o.tracking_status === 'Packed' ? 'selected' : ''}>Packed</option>
+                                <option value="Shipped" ${o.tracking_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Delivered" ${o.tracking_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                document.getElementById('ordersBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Error loading orders.</td></tr>';
+            }
+        }
+
+        async function updateTracking(orderItemId, status) {
+            try {
+                await api.post('/seller/orders/status', { orderItemId, status });
+                showToast(`✅ Order status updated to ${status}!`);
+            } catch (err) {
+                showToast('❌ Failed to update tracking status', '#ef4444');
+            }
+        }
+
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = getUser();
+
+            const payload = {
+                name: document.getElementById('p_name').value,
+                name_ta: document.getElementById('p_name_ta').value,
+                name_te: document.getElementById('p_name_te').value,
+                description: document.getElementById('p_desc').value,
+                price: Number(document.getElementById('p_price').value),
+                stock: Number(document.getElementById('p_stock').value),
+                category: document.getElementById('p_cat').value,
+                image_url: document.getElementById('p_img').value,
+                sellerId: user.id
+            };
+
+            try {
+                await api.post('/seller/products', payload);
+                showToast('✅ Product submitted for Admin approval!');
+                e.target.reset();
+                showTab('products', document.querySelector('.nav-link'));
+                await loadDashboardData(user.id);
+            } catch (err) {
+                showToast('❌ Failed to submit product', '#ef4444');
+            }
+        });
+    </script>
+</body>
+</html>

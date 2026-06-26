@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist - Quick Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #0f1117; min-height: 100vh; display: flex; justify-content: center; }
+        .wishlist-page { width: 100%; min-height: 100vh; background: #0f1117; display: flex; flex-direction: column; padding-bottom: 40px; }
+
+        .wishlist-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px; position: sticky; top: 0;
+            background: #0f1117; z-index: 10; border-bottom: 1px solid #1f2937;
+        }
+        .back-btn {
+            width: 40px; height: 40px; background: #1f2937;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; border: 1px solid #374151; transition: all 0.2s;
+        }
+        .back-btn:hover { background: #374151; }
+        .wishlist-header h2 { font-size: 18px; font-weight: 800; color: #f9fafb; }
+        .item-count { background: #ec4899; color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+        .wishlist-list { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+        .wishlist-card {
+            background: #1f2937; border: 1px solid #374151; border-radius: 18px;
+            padding: 14px; display: flex; gap: 14px; align-items: flex-start; transition: all 0.2s;
+        }
+        .wishlist-card:hover { border-color: #ec4899; }
+
+        .wishlist-card img {
+            width: 80px; height: 80px; object-fit: contain;
+            background: #111827; border-radius: 12px; padding: 6px; flex-shrink: 0;
+        }
+        .wishlist-info { flex: 1; min-width: 0; }
+        .wl-cat { font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .wl-name { font-size: 13px; font-weight: 700; color: #f9fafb; margin-bottom: 8px; line-height: 1.35; }
+        .wl-prices { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+        .wl-price-now { font-size: 15px; font-weight: 800; color: #818cf8; }
+        .wl-price-was { font-size: 12px; color: #6b7280; text-decoration: line-through; }
+        .price-drop-tag {
+            display: inline-block; background: #1a3a2a; color: #10b981;
+            border: 1px solid #10b981; border-radius: 8px; padding: 4px 10px;
+            font-size: 11px; font-weight: 700; margin-bottom: 10px;
+        }
+        .move-to-cart-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white; border: none; padding: 9px 16px;
+            border-radius: 10px; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .move-to-cart-btn:hover { opacity: 0.9; }
+
+        .empty-wishlist {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 60px 20px; text-align: center;
+        }
+        .empty-wishlist .icon { font-size: 72px; margin-bottom: 16px; }
+        .empty-wishlist h3 { font-size: 20px; font-weight: 700; color: #f9fafb; margin-bottom: 8px; }
+        .empty-wishlist p { font-size: 14px; color: #6b7280; margin-bottom: 24px; }
+        .shop-btn {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white; border: none; padding: 14px 32px;
+            border-radius: 14px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .shop-btn:hover { opacity: 0.9; }
+
+        .fab-voice {
+            position: fixed; bottom: 24px;
+            right: 20px;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+            cursor: pointer; z-index: 150; transition: all 0.2s;
+        }
+        .fab-voice:hover { transform: scale(1.08); }
+        .fab-voice.listening { animation: pulse 1.5s infinite; background: linear-gradient(135deg, #ef4444, #dc2626); }
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            70%  { box-shadow: 0 0 0 16px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+    </style>
+</head>
+<body>
+<div class="wishlist-page">
+    <div class="wishlist-header" style="position:relative;">
+        <div class="back-btn" onclick="window.history.back()">←</div>
+        <h2 data-i18n="wishlist">Wishlist</h2>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <a class="icon-btn" id="bellBtn" onclick="toggleNotificationsTray()" title="Notifications" style="width:36px; height:36px; font-size:16px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#1f2937; border:1px solid #374151; position:relative; text-decoration:none; cursor:pointer;">
+                🔔
+                <span class="badge" id="notiBadgeCount" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; width:14px; height:14px; font-size:8px; border-radius:50%; align-items:center; justify-content:center; color:white; font-weight:700;">0</span>
+            </a>
+            <div class="item-count" id="wishCount">0</div>
+        </div>
+    </div>
+
+    <!-- Notification Tray Dropdown Overlay -->
+    <div id="notiTray" style="display:none; position:absolute; top:70px; right:20px; width:300px; background:rgba(31, 41, 55, 0.98); backdrop-filter:blur(10px); border:1px solid #374151; border-radius:18px; box-shadow:0 20px 45px rgba(0,0,0,0.5); z-index:300; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #374151; padding-bottom:8px;">
+            <h4 style="font-size:13px; font-weight:700; margin:0; color:#f9fafb;">🔔 Price Drop Alerts</h4>
+            <span style="font-size:11px; color:#818cf8; cursor:pointer; font-weight:600;" onclick="markAllNotificationsRead()">Mark all read</span>
+        </div>
+        <div id="notiList" style="max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+            <div style="text-align:center; color:#9ca3af; font-size:12px; padding:20px 0;">No new notifications</div>
+        </div>
+    </div>
+
+    <div id="wishlistContent" style="flex:1;"></div>
+    <div id="voice-fab" class="fab-voice">🎤</div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/translations.js"></script>
+<script src="js/voice.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        initVoiceAssistant();
+        const user = getUser();
+        if (user) loadNotifications();
+        if (!user) { window.location.href = 'login.html'; return; }
+
+        const content = document.getElementById('wishlistContent');
+
+        try {
+            const items = await api.get(`/wishlist/${user.id}`);
+            document.getElementById('wishCount').textContent = items.length;
+
+            if (items.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-wishlist">
+                        <div class="icon">❤️</div>
+                        <h3>Wishlist is empty!</h3>
+                        <p>Save products you love and get notified when prices drop.</p>
+                        <button class="shop-btn" onclick="window.location.href='products.html'">🛍️ Explore Products</button>
+                    </div>`;
+                return;
+            }
+
+            let alertProducts = [];
+            content.innerHTML = `<div class="wishlist-list">${
+                items.map(item => {
+                    const name = getProductTranslatedName(item);
+                    const hasDropped = item.price < item.saved_price;
+                    if (hasDropped) alertProducts.push(item);
+                    return `
+                        <div class="wishlist-card">
+                            <img src="${item.image_url}" alt="${item.name}" onerror="this.src='https://placehold.co/80x80/1f2937/6366f1?text=📦'">
+                            <div class="wishlist-info">
+                                <div class="wl-cat">${item.category || 'Product'}</div>
+                                <div class="wl-name">${name}</div>
+                                <div class="wl-prices">
+                                    <span class="wl-price-now">₹${Number(item.price).toLocaleString('en-IN')}</span>
+                                    ${item.saved_price !== item.price ? `<span class="wl-price-was">₹${Number(item.saved_price).toLocaleString('en-IN')}</span>` : ''}
+                                </div>
+                                ${hasDropped ? `<div class="price-drop-tag">⬇️ Price dropped by ₹${(item.saved_price - item.price).toLocaleString('en-IN')}</div>` : ''}
+                                <button class="move-to-cart-btn" onclick="moveToCart(${item.id})">🛒 Move to Cart</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+            }</div>`;
+
+            // Speak price drop alerts in current language
+            alertProducts.forEach(item => {
+                const name = getProductTranslatedName(item);
+                const text = getTranslatedText('voice_price_drop', name, item.price_drop_alert || `Price dropped by ₹${(item.saved_price - item.price)}`);
+                setTimeout(() => speak(text), 1000);
+            });
+
+        } catch (err) {
+            content.innerHTML = '<p style="text-align:center;color:#ef4444;padding:30px;">Error loading wishlist.</p>';
+        }
+    });
+
+    async function moveToCart(productId) {
+        const user = getUser();
+        try {
+            await api.post('/cart', { userId: user.id, productId, quantity: 1 });
+            speak(getTranslatedText('add_to_cart') + '!');
+            window.location.href = 'cart.html';
+        } catch (err) {}
+    }
+
+    /* Notification Tray Logic */
+    async function toggleNotificationsTray() {
+        const tray = document.getElementById('notiTray');
+        const isVisible = tray.style.display === 'block';
+        tray.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            await loadNotifications();
+        }
+    }
+
+    async function loadNotifications() {
+        const user = getUser();
+        if (!user) return;
+        try {
+            const notifications = await api.get(`/notifications/${user.id}`);
+            const badge = document.getElementById('notiBadgeCount');
+            const unreadCount = notifications.filter(n => !n.is_read).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            const notiList = document.getElementById('notiList');
+            if (notifications.length === 0) {
+                notiList.innerHTML = '<div style="text-align:center; color:#9ca3af; font-size:12px; padding:20px 0;">No new notifications</div>';
+                return;
+            }
+
+            notiList.innerHTML = notifications.map(n => `
+                <div style="background:${n.is_read ? '#1f2937' : 'rgba(99, 102, 241, 0.15)'}; border:1px solid ${n.is_read ? '#374151' : 'rgba(99, 102, 241, 0.3)'}; border-radius:10px; padding:10px; font-size:11px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div style="flex:1; color:#f9fafb; line-height:1.4; text-align:left;">${n.message}</div>
+                    <span style="cursor:pointer; font-size:14px; color:#ef4444; padding:0 2px;" onclick="deleteNotification(${n.id}, event)">×</span>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function markAllNotificationsRead() {
+        const user = getUser();
+        if (!user) return;
+        try {
+            await api.post('/notifications/read', { userId: user.id });
+            document.getElementById('notiBadgeCount').style.display = 'none';
+            await loadNotifications();
+        } catch(err){}
+    }
+
+    async function deleteNotification(notiId, event) {
+        if (event) event.stopPropagation();
+        try {
+            await api.post('/notifications/delete', { notificationId: notiId });
+            await loadNotifications();
+        } catch(err){}
+    }
+</script>
+</body>
+</html>
