@@ -2,16 +2,17 @@
   "version": 2,
   "functions": {
     "backend/server.js": {
-      "runtime": "@vercel/node"
+      "runtime": "@vercel/node@3"
     }
   },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/server.js"
+      "dest": "/backend/server.js"
     },
     {
-      "handle": "filesystem"
+      "src": "/",
+      "dest": "/frontend/index.html"
     },
     {
       "src": "/(.*)",
